@@ -3,19 +3,19 @@ const cors = require('cors');
 const app = express();
 const mongoose = require("mongoose");
 const nodemailer = require('nodemailer');
+require("dotenv").config();
 
-mongoose.connect("mongodb+srv://pjeffersondgl_db_user:3gcUqlQ9bYR2dTrJ@cluster0.iz5oq3k.mongodb.net/Passkey")
-    .then(function () {
-        console.log("database connected...");
-    })
-    .catch(function () {
-        console.log("failed");
-    });
+mongoose.connect(process.env.MONGO_URI)
+    .then(() => console.log("Database connected"))
+    .catch((error) => console.error("Database connection failed:", error));
 
 const credential = mongoose.model("credential", {}, "Bulkmail");
 
 app.use(cors());
 app.use(express.json());
+app.get("/", (req, res) => {
+    res.json({ message: "Bulk Mail Backend is running!" });
+});
 
 app.post("/mail", async function (req, res) {
 
