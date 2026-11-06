@@ -65,6 +65,10 @@ console.log("Gmail user found:", data[0].user);
 
 
 
-app.listen(3000, function () {
-    console.log("server started...");
-});
+if (require.main === module) {
+    app.listen(3000, function () {
+        console.log("Server started...");
+    });
+}
+
+module.exports = app;
