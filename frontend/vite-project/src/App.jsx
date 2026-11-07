@@ -59,10 +59,13 @@ function App() {
     setStatus(true);
 
     try {
-        const response = await axios.post("http://localhost:3000/mail", {
-            msg: msg,
-            emailList: emailList
-        });
+        const response = await axios.post(
+    "https://bulkmail-sender-backend.vercel.app/mail",
+    {
+        msg: msg,
+        emailList: emailList
+    }
+);
 
         if (response.data === true) {
             alert("Email sent successfully!");
