@@ -60,7 +60,7 @@ function App() {
 
     try {
       const response = await axios.post(
-        "http://localhost:3000/mail",
+        "https://bulkmail-sender-backend.vercel.app/",
         {
           msg: msg,
           emailList: emailList
