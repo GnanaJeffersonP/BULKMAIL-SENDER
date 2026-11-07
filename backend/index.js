@@ -11,7 +11,13 @@ mongoose.connect(process.env.MONGO_URI)
 
 const credential = mongoose.model("credential", {}, "Bulkmail");
 
-app.use(cors());
+app.use(cors({
+    origin: "https://bulkmail-sender-gray.vercel.app",
+    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
+    allowedHeaders: ["Content-Type", "Authorization"]
+}));
+
+app.use(express.json());
 app.use(express.json());
 app.get("/", (req, res) => {
     res.json({ message: "Bulk Mail Backend is running!" });
