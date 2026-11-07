@@ -18,6 +18,12 @@ app.use(cors({
 }));
 
 app.use(express.json());
+app.get("/health", (req, res) => {
+    res.status(200).json({
+        status: "OK",
+        message: "Backend is working!"
+    });
+});
 app.get("/", (req, res) => {
     res.json({ message: "Bulk Mail Backend is running!" });
 });
