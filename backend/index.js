@@ -1,84 +1,82 @@
-const express = require('express');
-const cors = require('cors');
-const app = express();
-const mongoose = require("mongoose");
-const nodemailer = require('nodemailer');
+
+const express = require("express");
+const cors = require("cors");
+const nodemailer = require("nodemailer");
 require("dotenv").config();
 
-mongoose.connect(process.env.MONGO_URI)
-    .then(() => console.log("Database connected"))
-    .catch((error) => console.error("Database connection failed:", error));
-
-const credential = mongoose.model("credential", {}, "Bulkmail");
+const app = express();
 
 app.use(cors({
-    origin: "https://bulkmail-sender-gray.vercel.app",
-    methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-    allowedHeaders: ["Content-Type", "Authorization"]
+    origin: [
+        "http://localhost:5173",
+        "https://bulkmail-sender-gray.vercel.app"
+    ],
+    methods: ["GET", "POST", "OPTIONS"],
+    allowedHeaders: ["Content-Type"]
 }));
 
 app.use(express.json());
+
+// Check backend
+app.get("/", (req, res) => {
+    res.json({
+        message: "Bulk Mail Backend is running!"
+    });
+});
+
+// Health check
 app.get("/health", (req, res) => {
-    res.status(200).json({
+    res.json({
         status: "OK",
         message: "Backend is working!"
     });
 });
-app.get("/", (req, res) => {
-    res.json({ message: "Bulk Mail Backend is running!" });
+
+// Gmail transporter
+const transporter = nodemailer.createTransport({
+    service: "gmail",
+    auth: {
+        user: process.env.GMAIL_USER,
+        pass: process.env.GMAIL_APP_PASSWORD
+    }
 });
 
-app.post("/mail", async function (req, res) {
-
+// Send emails
+app.post("/mail", async (req, res) => {
     try {
-        var msg = req.body.msg;
-        var emailList = req.body.emailList;
+        const { msg, emailList } = req.body;
 
-        const data = await credential.find();
-
-        console.log("Credentials found:", data.length);
-
-if (data.length === 0) {
-    throw new Error("No credentials found in Bulkmail collection");
-}
-
-console.log("Gmail user found:", data[0].user);
-
-        const transporter = nodemailer.createTransport({
-            service: "gmail",
-            auth: {
-                user: data[0].toJSON().user,
-                pass: data[0].toJSON().pass
-            }
-        });
-
-        for (let i = 0; i < emailList.length; i++) {
-
-            await transporter.sendMail({
-                from: data[0].toJSON().user,
-                to: emailList[i],
-                subject: "testing",
-                text: msg
+        if (!msg || !Array.isArray(emailList) || emailList.length === 0) {
+            return res.status(400).json({
+                success: false,
+                message: "Message and email list are required"
             });
-
-            console.log("email sent to: " + emailList[i]);
         }
 
-        res.send(true);
+for (const recipient of emailList) {
+    await transporter.sendMail({
+        from: process.env.GMAIL_USER,
+        to: recipient,
+        subject: "Bulk Mail Sender",
+        text: msg
+    });
 
-    }
-    catch (error) {
-        console.log(error);
-        res.send(false);
-    }
+    console.log("Email sent to:", recipient);
+}
 
+res.send(true);
+
+} catch (error) {
+    console.error("Email sending error:", error.message);
+
+    res.status(500).send(false);
+}
 });
 
-
-
+// Local server
 if (require.main === module) {
-    app.listen(3000, function () {
-        console.log("Server started...");
+    app.listen(3000, () => {
+        console.log("Server started on port 3000");
     });
 }
 

@@ -9,6 +9,10 @@ function App() {
   const [emailList, setEmailList] = useState([]);
   const [fileName, setFileName] = useState("");
 
+  function handleChange(event) {
+    setMsg(event.target.value);
+}
+
   function handlefile(event) {
     const file = event.target.files[0];
 
@@ -41,44 +45,38 @@ function App() {
     reader.readAsArrayBuffer(file);
   }
 
-  function handleChange(event) {
-    setMsg(event.target.value);
-  }
-
-  async function send() {
+ async function send() {
     if (!msg.trim()) {
-      alert("Please enter your email message");
-      return;
+        alert("Please enter your email message");
+        return;
     }
 
     if (emailList.length === 0) {
-      alert("Please upload a valid Excel email list");
-      return;
+        alert("Please upload a valid Excel email list");
+        return;
     }
 
     setStatus(true);
 
     try {
-     const response = await axios.post(
-  "https://bulkmail-sender-backend.vercel.app/mail",
-  {
-    msg: msg,
-    emailList: emailList
-  }
-);
+        const response = await axios.post("http://localhost:3000/mail", {
+            msg: msg,
+            emailList: emailList
+        });
 
-      if (response.data === true) {
-        alert("Email sent successfully!");
-      } else {
-        alert("Email sending failed");
-      }
+        if (response.data === true) {
+            alert("Email sent successfully!");
+        } else {
+            alert("Email sending failed");
+        }
+
     } catch (error) {
-      console.log(error);
-      alert("Something went wrong!");
+        console.log(error);
+        alert("Something went wrong!");
     } finally {
-      setStatus(false);
+        setStatus(false);
     }
-  }
+}
 
   return (
     <div className="min-h-screen bg-[#080F20] text-white">
